@@ -43,11 +43,11 @@ class Pic4sr_ground(Node):
 		#rclpy.logging.set_logger_level('pic4rl_environment', 10)
 		self.declare_parameters(namespace='',
 		parameters=[
-			('model_path', '/home/mauromartini/SR_ws/src/pic4sr/pic4sr/models/srgan'),
+			('model_path', '/home/mauromartini/SR_ws/src/PIC4SuperResolution/pic4sr/pic4sr/models/srgan'),
 			('sensor', 'rgb'),
 			('image_width', 50),
 			('image_height', 50),
-			('device', 'cpu')
+			('device', 'coral')
 			])
 
 		self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
