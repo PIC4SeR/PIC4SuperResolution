@@ -1,7 +1,8 @@
-pic4sr_run:
+pic4sr_params:
   ros__parameters:
     model_path: '/home/mauromartini/SR_ws/src/pic4sr/models/...'
     sensor: 'rgb' # rgb or depth
     image_width: 50
     image_height: 50
+    fps: 15
     device: coral #coral or cpu
