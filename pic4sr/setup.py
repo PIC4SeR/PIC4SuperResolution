@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
         'pic4sr_realsense = pic4sr.pic4sr_realsense:main',
+        'pic4sr_cam = pic4sr.pic4sr_cam:main',
 	'pic4sr_ground = pic4sr.pic4sr_ground:main',
         ],
     },

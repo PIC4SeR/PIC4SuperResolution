@@ -70,6 +70,12 @@ class Pic4sr_realsense(Node):
 		self.get_logger().info('start publishing on ' + self.depth_topic)
 		self.bridge = CvBridge()
 		self.run()
+		
+	def show_image(self, image, text):
+		colormap = np.asarray(image, dtype = np.uint8)
+		cv2.namedWindow(text, cv2.WINDOW_NORMAL)
+		cv2.imshow(text,colormap)
+		cv2.waitKey(1)
 
 	def crop_image(self, image):
 		y = 0

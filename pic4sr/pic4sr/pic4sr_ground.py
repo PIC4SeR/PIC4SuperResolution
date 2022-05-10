@@ -47,7 +47,7 @@ class Pic4sr_ground(Node):
 			('sensor', 'rgb'),
 			('image_width', 50),
 			('image_height', 50),
-			('device', 'coral')
+			('device', 'cpu')
 			])
 
 		self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
@@ -60,20 +60,21 @@ class Pic4sr_ground(Node):
 		************************************************************"""
 		qos = QoSProfile(depth=10)
 
-		self.depth_sub = self.create_subscription(
-			Image,
-					'/camera/depth/image_raw',
-					self.depth_callback,
-					qos_profile=qos_profile_sensor_data)
+		if self.sensor == 'rgb':
+			self.rgb_sub = self.create_subscription(
+				Image,
+				'/camera/rgb/image_raw',
+				self.rgb_callback,
+				qos_profile=qos_profile_sensor_data)
 
-		self.rgb_sub = self.create_subscription(
-			Image,
-			'/camera/rgb/image_raw',
-			self.rgb_callback,
-			qos_profile=qos_profile_sensor_data)
+		elif self.sensor == 'depth':
+			self.depth_sub = self.create_subscription(
+				Image,
+						'/camera/depth/image_raw',
+						self.depth_callback,
+						qos_profile=qos_profile_sensor_data)
 
 		self.cutoff = 6.0
-		self.depth_image_raw = np.zeros((self.image_height,self.image_width), np.uint8)
 		self.show_img = True
 		self.bridge = CvBridge()	
 
