@@ -31,8 +31,8 @@ class Pic4sr_ground():
         dirname = os.path.dirname(__file__)
         self.model_path = os.path.join(dirname, 'models/srgan')
         self.sensor = 'rgb'
-        self.image_width = 50
-        self.image_height = 50
+        self.image_width = 80
+        self.image_height = 60
         self.device = 'cpu'
 
         self.cutoff = 6.0
@@ -42,10 +42,10 @@ class Pic4sr_ground():
         ** Instantiate SUPER RESOLUTION model
         ************************************************************"""
         if self.device == 'coral':
-            self.model_path = self.model_path+'_converted_int8_edgetpu.tflite'
+            self.model_path = self.model_path+'_converted_int8_edgetpu'+str(self.image_height)+str(self.image_width)+'.tflite'
             self.sr_model = ModelCORAL(self.model_path)
         elif self.device == 'cpu':
-            self.model_path = self.model_path+'.tflite'
+            self.model_path = self.model_path+str(self.image_height)+str(self.image_width)+'.tflite'
             self.sr_model = ModelTFlite(self.model_path)
         self.latencies = [] 
     
