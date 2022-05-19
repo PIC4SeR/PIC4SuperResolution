@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Example of use
+# ./start_SR_stream.bash -e 'H264' -w 80 -h 60 -i '192.168.10.134'
 while getopts e:h:w:i: flag
 do
     case "${flag}" in
