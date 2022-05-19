@@ -13,7 +13,7 @@ def show_image(image, text):
     cv2.imshow(text,colormap)
     cv2.waitKey(1)
 
-def crop_image( image):
+def crop_image(image):
     y = 0
     h = 480
     x = (640-480)//2
@@ -49,8 +49,8 @@ def run():
     frame_height = 60
     codec = 'JPEG'
 
-    cap_width = 640
-    cap_height = 480
+    cap_width = 80
+    cap_height = 60
     cap_times = []
     cap = cv2.VideoCapture(0)
 
@@ -112,11 +112,11 @@ def run():
         #ret, frame = test_cap_time(cap, cap_times)
         if ret is True:
             # Crop Image
-            image_cropped = crop_image(frame)
+            #image_cropped = crop_image(frame)
 
             # Resize Image
-            image_resized = resize_image(image_cropped, frame_width, frame_height)
-            out.write(image_resized)
+            #image_resized = resize_image(image_cropped, frame_width, frame_height)
+            out.write(frame)
         else:
             print("Camera error.")
             time.sleep(10)

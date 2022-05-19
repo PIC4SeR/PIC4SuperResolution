@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 
 import os
+
+from pic4sr_send_gstreamer import crop_image, resize_image
+
 os.environ["CUDA_VISIBLE_DEVICES"]="-1" 
 #import tensorflow as tf
 
 # gpus = tf.config.experimental.list_physical_devices('GPU')
 
 # if gpus:
-#   try:
-#   # Currently, memory growth needs to be the same across GPUs
-#       for gpu in gpus:
-#           tf.config.experimental.set_memory_growth(gpu, True)
-#           logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-#           print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-#   except RuntimeError as e:
-#   # Memory growth must be set before GPUs have been initialized
-#       print(e)
+# 	try:
+# 	# Currently, memory growth needs to be the same across GPUs
+# 		for gpu in gpus:
+# 			tf.config.experimental.set_memory_growth(gpu, True)
+# 			logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+# 			print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+# 	except RuntimeError as e:
+# 	# Memory growth must be set before GPUs have been initialized
+# 		print(e)
 
 import sys
 import time
@@ -27,28 +30,28 @@ from utils.model_class_TFlite import ModelTFlite
 
 class Pic4sr_ground():
     def __init__(self):
-        
-        dirname = os.path.dirname(__file__)
-        self.model_path = os.path.join(dirname, 'models/srgan')
-        self.sensor = 'rgb'
+
+        self.model_path = '/home/marco/ros2_ws/src/PIC4SuperResolution/pic4sr/pic4sr/models/srgan'
+        self.sensor = 'bgr'
         self.image_width = 80
         self.image_height = 60
+        self.codec='JPEG'
         self.device = 'cpu'
 
         self.cutoff = 6.0
-        self.show_img = True    
+        self.show_img = True	
 
         """************************************************************
         ** Instantiate SUPER RESOLUTION model
         ************************************************************"""
         if self.device == 'coral':
-            self.model_path = self.model_path+'_converted_int8_edgetpu'+str(self.image_height)+str(self.image_width)+'.tflite'
+            self.model_path = self.model_path+'_converted_int8_edgetpu'+str(self.image_width)+str(self.image_height)+'.tflite'
             self.sr_model = ModelCORAL(self.model_path)
         elif self.device == 'cpu':
-            self.model_path = self.model_path+str(self.image_height)+str(self.image_width)+'.tflite'
+            self.model_path = self.model_path+str(self.image_width)+str(self.image_height)+'.tflite'
             self.sr_model = ModelTFlite(self.model_path)
-        self.latencies = [] 
-    
+        self.latencies = []	
+
     def process_depth_image(self,frame):
         # IF SIMULATION
         #max_depth = self.cutoff # [m]
@@ -89,8 +92,8 @@ class Pic4sr_ground():
         if self.show_img:
             self.show_image(rgb_image_raw, 'Raw RGB Image')
             self.show_image2(sr_rgb_image[0], 'SR RGB Image')
-        #print('image shape: ', img.shape)
-        return image
+        # print('image shape: ', img.shape)
+        return img
 
     def show_image(self, image, text):
         colormap = np.asarray(image, dtype = np.uint8)
@@ -114,18 +117,61 @@ class Pic4sr_ground():
         return output_img
 
     def run(self,):
-        #cap_receive = cv2.VideoCapture('udpsrc port=5000 caps = "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96" ! rtph264depay ! h264parse ! avdec_h264 ! decodebin ! videoconvert ! appsink', cv2.CAP_GSTREAMER)
-        cap_receive = cv2.VideoCapture('udpsrc port=5000 caps = "application/x-rtp, encoding-name=(string)H264, payload=(int)96" ! rtph264depay ! h264parse ! avdec_h264 ! appsink', cv2.CAP_GSTREAMER)
+
+        if self.codec == 'H264':
+            cap_receive = cv2.VideoCapture(
+            ("udpsrc port=5000 "
+            "! queue " 
+            "! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 "
+            "! rtph264depay "
+            "! h264parse "
+            "! avdec_h264 "
+            "! decodebin "
+            "! videoconvert "
+            "! queue leaky=2 "
+            "! appsink "), cv2.CAP_GSTREAMER)
+
+        if self.codec == 'H265':
+            cap_receive = cv2.VideoCapture(
+            ("udpsrc port=5000 "
+            "! queue leaky=2 " 
+            "! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96 "
+            "! rtph265depay "
+            "! h265parse "
+            "! avdec_h265 "
+            "! decodebin "
+            #   "! videoconvert "
+            #   "! video/x-raw,format=(string)BGR "
+            "! videoconvert "
+            "! appsink "), cv2.CAP_GSTREAMER)
+
+        if self.codec == 'JPEG':
+            cap_receive = cv2.VideoCapture(
+                ("udpsrc port=5000 "
+                # "! queue leaky=2" # lasciare qui
+                "! application/x-rtp, encoding-name=(string)JPEG, payload=(int)26 "
+                "! rtpjpegdepay "
+                "! jpegdec "
+                "! decodebin "
+                "! videoconvert "
+                "! video/x-raw,format=(string)BGR "
+                "! videoconvert "
+                "! appsink drop=1 "), cv2.CAP_GSTREAMER)
 
         if not cap_receive.isOpened():
             print('VideoCapture not opened')
             exit(0)
+        
+        print("Start VideoCapture...")
 
         while True:
+            
             ret,frame = cap_receive.read()
 
             if ret:
+                frame = frame[3:53, 3:53, :]
                 image = self.process_rgb_image(frame)
+                # self.show_image(frame, 'Received frame')
             else:
                 print('ERROR: empty frame')
                 time.sleep(10)
@@ -135,6 +181,7 @@ class Pic4sr_ground():
 
         cap_receive.release()
         cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     pic4sr_ground = Pic4sr_ground()
