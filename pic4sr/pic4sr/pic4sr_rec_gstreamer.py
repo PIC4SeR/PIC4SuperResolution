@@ -2,6 +2,8 @@
 
 import os
 
+from matplotlib.pyplot import axis
+
 from pic4sr_send_gstreamer import crop_image, resize_image
 
 os.environ["CUDA_VISIBLE_DEVICES"]="-1" 
@@ -33,8 +35,8 @@ class Pic4sr_ground():
 
         self.model_path = '/home/marco/ros2_ws/src/PIC4SuperResolution/pic4sr/pic4sr/models/srgan'
         self.sensor = 'bgr'
-        self.image_width = 80
-        self.image_height = 60
+        self.image_width = 50
+        self.image_height = 50
         self.codec='JPEG'
         self.device = 'cpu'
 
@@ -51,6 +53,12 @@ class Pic4sr_ground():
             self.model_path = self.model_path+str(self.image_width)+str(self.image_height)+'.tflite'
             self.sr_model = ModelTFlite(self.model_path)
         self.latencies = []	
+
+    def crop_image(self, image, h, w):
+        y = 3
+        x = 3
+        crop_img = image[y:y+h, x:x+w]
+        return crop_img
 
     def process_depth_image(self,frame):
         # IF SIMULATION
@@ -80,6 +88,9 @@ class Pic4sr_ground():
 
     def process_rgb_image(self, img):
         rgb_image_raw = np.array(img, dtype=np.float32)
+        rgb_image_raw = self.crop_image(rgb_image_raw, self.image_height, self.image_width)
+
+        # rgb_image_raw = np.transpose(rgb_image_raw, (1,0,2))
         # compute SR inference
         #rgb_image = cv2.cvtColor(rgb_image_raw, cv2.COLOR_BGR2RGB)
         #cv2.imwrite('/home/mauromartini/depth_images/rgb_image.png', rgb_image_raw)
@@ -90,8 +101,8 @@ class Pic4sr_ground():
 
         # stream image
         if self.show_img:
-            self.show_image(rgb_image_raw, 'Raw RGB Image')
-            self.show_image2(sr_rgb_image[0], 'SR RGB Image')
+            self.show_image(np.transpose(rgb_image_raw, (1,0,2)), 'Raw RGB Image')
+            self.show_image2(np.transpose(sr_rgb_image[0], (1,0,2)), 'SR RGB Image')
         # print('image shape: ', img.shape)
         return img
 
@@ -121,7 +132,7 @@ class Pic4sr_ground():
         if self.codec == 'H264':
             cap_receive = cv2.VideoCapture(
             ("udpsrc port=5000 "
-            "! queue " 
+            "! queue leaky=2 " 
             "! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 "
             "! rtph264depay "
             "! h264parse "
@@ -166,10 +177,11 @@ class Pic4sr_ground():
 
         while True:
             
-            ret,frame = cap_receive.read()
+            ret,frame = cap_receive.read()  
 
             if ret:
-                frame = frame[3:53, 3:53, :]
+                # print(np.shape(frame))
+                # print(np.shape(frame))
                 image = self.process_rgb_image(frame)
                 # self.show_image(frame, 'Received frame')
             else:
