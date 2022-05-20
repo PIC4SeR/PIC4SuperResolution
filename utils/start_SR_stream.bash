@@ -17,7 +17,7 @@ if [ $encoding = 'JPEG' ]; then
 echo "Streaming JPEG"
 gst-launch-1.0 v4l2src  device=/dev/video0 ! video/x-raw,width=640,height=480,framerate=15/1 \
 ! queue ! videoconvert ! videoscale ! video/x-raw,width=$width,height=$height ! videoconvert \
-! jpegenc ! rtpjpegpay \
+! jpegenc quality=100 idct-method=float ! rtpjpegpay \
 ! queue leaky=2 ! udpsink host="${ipaddr}" port=5000
 fi
 
@@ -27,5 +27,13 @@ gst-launch-1.0 v4l2src  device=/dev/video0 ! video/x-raw,width=640,height=480,fr
 ! queue ! videoconvert ! videoscale ! video/x-raw,width=$width,height=$height ! videoconvert \
 ! x264enc speed-preset=superfast tune=zerolatency ! rtph264pay \
 ! queue leaky=2 ! udpsink host="${ipaddr}" port=5000
+fi
+
+if [ $encoding = 'DEV' ]; then
+echo "Streaming DEV"
+gst-launch-1.0 v4l2src  device=/dev/video0 ! video/x-raw,width=640,height=480,framerate=15/1 \
+! queue ! videoconvert ! videoscale ! video/x-raw,width=$width,height=$height ! videoconvert \
+! avenc_mjpeg ! rtpjpegpay \
+! udpsink host="${ipaddr}" port=5000
 fi
 
