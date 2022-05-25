@@ -101,8 +101,10 @@ class Pic4sr_ground():
 
         # stream image
         if self.show_img:
-            self.show_image(np.transpose(rgb_image_raw, (1,0,2)), 'Raw RGB Image')
-            self.show_image2(np.transpose(sr_rgb_image[0], (1,0,2)), 'SR RGB Image')
+            # self.show_image(np.transpose(rgb_image_raw, (1,0,2)), 'Raw RGB Image')
+            # self.show_image2(np.transpose(sr_rgb_image[0], (1,0,2)), 'SR RGB Image')
+            self.show_image(rgb_image_raw, 'Raw RGB Image')
+            self.show_image2(sr_rgb_image[0], 'SR RGB Image')
         # print('image shape: ', img.shape)
         return img
 
