@@ -2,7 +2,7 @@
 
 import os
 
-from matplotlib.pyplot import axis
+import matplotlib.pyplot as plt
 
 from pic4sr_send_gstreamer import crop_image, resize_image
 
@@ -35,9 +35,9 @@ class Pic4sr_ground():
 
         self.model_path = '/home/marco/ros2_ws/src/PIC4SuperResolution/pic4sr/pic4sr/models/srgan'
         self.sensor = 'bgr'
-        self.image_width = 50
-        self.image_height = 50
-        self.codec='JPEG'
+        self.image_width = 80
+        self.image_height = 60
+        self.codec='H264'
         self.device = 'cpu'
 
         self.cutoff = 6.0
@@ -53,10 +53,11 @@ class Pic4sr_ground():
             self.model_path = self.model_path+str(self.image_width)+str(self.image_height)+'.tflite'
             self.sr_model = ModelTFlite(self.model_path)
         self.latencies = []	
+        self.latencies_rec = []
 
     def crop_image(self, image, h, w):
-        y = 3
-        x = 3
+        y = 2
+        x = 0
         crop_img = image[y:y+h, x:x+w]
         return crop_img
 
@@ -88,7 +89,7 @@ class Pic4sr_ground():
 
     def process_rgb_image(self, img):
         rgb_image_raw = np.array(img, dtype=np.float32)
-        rgb_image_raw = self.crop_image(rgb_image_raw, self.image_height, self.image_width)
+        # rgb_image_raw = self.crop_image(rgb_image_raw, self.image_height, self.image_width)
 
         # rgb_image_raw = np.transpose(rgb_image_raw, (1,0,2))
         # compute SR inference
@@ -126,8 +127,22 @@ class Pic4sr_ground():
         inference_time = time.perf_counter() - start
         self.latencies.append(inference_time)
         print('%.1fms' % (inference_time * 1000))
-        print(f'Average Speed: {1/np.mean(np.array(self.latencies))} fps')
+        print(f'Average Inf Speed: {1/np.mean(np.array(self.latencies))} fps')
         return output_img
+
+    def rec_frequency(self):
+        start = time.perf_counter()
+        tdiff = start - self.prev
+        self.latencies_rec.append(tdiff)
+        self.prev = start
+        print(f'Average Rec Speed: {1/np.mean(np.array(self.latencies_rec))} fps')        
+        if len(self.latencies_rec) > 200:
+            print(f'Average Rec Speed: {1/np.mean(np.array(self.latencies_rec))} fps')        
+            print(f'Max Rec Latency: {max(self.latencies_rec)}')
+            plt.hist(np.array(self.latencies_rec))
+            plt.savefig(os.path.expanduser('~/pic4sr_test/img.png'))
+            plt.show()
+            exit(0)
 
     def run(self,):
 
@@ -177,15 +192,16 @@ class Pic4sr_ground():
         
         print("Start VideoCapture...")
 
+        self.prev = time.perf_counter()
         while True:
             
             ret,frame = cap_receive.read()  
+            # self.show_image(frame, 'rec')
+            # self.rec_frequency()
+
 
             if ret:
-                # print(np.shape(frame))
-                # print(np.shape(frame))
                 image = self.process_rgb_image(frame)
-                # self.show_image(frame, 'Received frame')
             else:
                 print('ERROR: empty frame')
                 time.sleep(10)
