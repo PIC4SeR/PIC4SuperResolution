@@ -128,6 +128,7 @@ class Pic4sr_ground(Node):
 	def rgb_callback(self, msg):
 		rgb_image_raw = np.zeros((self.image_height,self.image_width,3), np.uint8)
 		rgb_image_raw = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+		rgb_image_raw  =self.process_rgb_image(rgb_image_raw)
 		rgb_image_raw = np.array(rgb_image_raw, dtype=np.float32)
 		
 		# compute SR inference
@@ -144,16 +145,19 @@ class Pic4sr_ground(Node):
 
 	def process_rgb_image(self, img):
 		#print('image shape: ', img.shape)
+		image = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 		return image
 
 	def show_image(self, image, text):
 		colormap = np.asarray(image, dtype = np.uint8)
+		colormap = cv2.rotate(colormap, cv2.ROTATE_90_COUNTERCLOCKWISE)
 		cv2.namedWindow(text, cv2.WINDOW_NORMAL)
 		cv2.imshow(text,colormap)
 		cv2.waitKey(1)
 
 	def show_image2(self, image, text):
 		colormap = np.asarray(image, dtype = np.uint8)
+		colormap = cv2.rotate(colormap, cv2.ROTATE_90_COUNTERCLOCKWISE)
 		cv2.namedWindow(text, cv2.WINDOW_NORMAL)
 		cv2.imshow(text,colormap)
 		cv2.waitKey(1)

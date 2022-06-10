@@ -26,8 +26,8 @@ class Pic4sr_cam(Node):
 		self.declare_parameters(namespace='',
 		parameters=[
 			('sensor', 'rgb'),
-			('image_width', 120),
-			('image_height', 160),
+			('image_width', 160),
+			('image_height', 120),
 			('fps', 30)
 			])
 
