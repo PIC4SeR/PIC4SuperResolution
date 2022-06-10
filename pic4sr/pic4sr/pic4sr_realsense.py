@@ -27,9 +27,9 @@ class Pic4sr_realsense(Node):
 		self.declare_parameters(namespace='',
 		parameters=[
 			('sensor', 'rgb'),
-			('image_width', 50),
-			('image_height', 50),
-			('fps', 15)
+			('image_width', 160),
+			('image_height', 120),
+			('fps', 30)
 			])
 
 		self.sensor = self.get_parameter('sensor').get_parameter_value().string_value
