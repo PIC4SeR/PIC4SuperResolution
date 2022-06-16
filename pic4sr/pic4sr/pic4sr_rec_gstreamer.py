@@ -35,8 +35,8 @@ class Pic4sr_ground():
 
         self.model_path = '/home/marco/ros2_ws/src/PIC4SuperResolution/pic4sr/pic4sr/models/srgan'
         self.sensor = 'bgr'
-        self.image_width = 80
-        self.image_height = 60
+        self.image_width = 60
+        self.image_height = 80
         self.codec='H264'
         self.device = 'cpu'
 
@@ -111,12 +111,14 @@ class Pic4sr_ground():
 
     def show_image(self, image, text):
         colormap = np.asarray(image, dtype = np.uint8)
+        colormap = cv2.rotate(colormap, cv2.ROTATE_90_COUNTERCLOCKWISE)
         cv2.namedWindow(text, cv2.WINDOW_NORMAL)
         cv2.imshow(text,colormap)
         cv2.waitKey(1)
 
     def show_image2(self, image, text):
         colormap = np.asarray(image, dtype = np.uint8)
+        colormap = cv2.rotate(colormap, cv2.ROTATE_90_COUNTERCLOCKWISE)
         cv2.namedWindow(text, cv2.WINDOW_NORMAL)
         cv2.imshow(text,colormap)
         cv2.waitKey(1)
