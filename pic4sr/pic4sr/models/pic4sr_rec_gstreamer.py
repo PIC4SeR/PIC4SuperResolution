@@ -32,13 +32,14 @@ from utils.model_class_TFlite import ModelTFlite
 
 class Pic4sr_ground():
     def __init__(self):
-
-        self.model_path = '/home/marco/ros2_ws/src/PIC4SuperResolution/pic4sr/pic4sr/models/srgan'
+    	
+        dirname = os.path.dirname(__file__)
+        self.model_path = os.path.join(dirname, 'models/srgan')
         self.sensor = 'bgr'
-        self.image_width = 60
-        self.image_height = 80
+        self.image_width = 120
+        self.image_height = 160
         self.codec='H264'
-        self.device = 'cpu'
+        self.device = 'coral'
 
         self.cutoff = 6.0
         self.show_img = True	
@@ -47,18 +48,18 @@ class Pic4sr_ground():
         ** Instantiate SUPER RESOLUTION model
         ************************************************************"""
         if self.device == 'coral':
-            self.model_path = self.model_path+'_converted_int8_edgetpu'+str(self.image_width)+str(self.image_height)+'.tflite'
+            self.model_path = self.model_path+'_edgetpu_'+str(self.image_width)+'_'+str(self.image_height)+'.tflite'
             self.sr_model = ModelCORAL(self.model_path)
         elif self.device == 'cpu':
-            self.model_path = self.model_path+str(self.image_width)+str(self.image_height)+'.tflite'
+            self.model_path = self.model_path+'_cpu_'+str(self.image_width)+'_'+str(self.image_height)+'.tflite'
             self.sr_model = ModelTFlite(self.model_path)
         self.latencies = []	
         self.latencies_rec = []
 
     def crop_image(self, image, h, w):
-        y = 2
-        x = 0
-        crop_img = image[y:y+h, x:x+w]
+        y = 0
+        x = 2
+        crop_img = image[x:x+w,y:y+h]
         return crop_img
 
     def process_depth_image(self,frame):
@@ -89,9 +90,9 @@ class Pic4sr_ground():
 
     def process_rgb_image(self, img):
         rgb_image_raw = np.array(img, dtype=np.float32)
-        # rgb_image_raw = self.crop_image(rgb_image_raw, self.image_height, self.image_width)
+        #rgb_image_raw = self.crop_image(rgb_image_raw, self.image_height, self.image_width)
 
-        # rgb_image_raw = np.transpose(rgb_image_raw, (1,0,2))
+        rgb_image_raw = np.transpose(rgb_image_raw, (1,0,2))
         # compute SR inference
         #rgb_image = cv2.cvtColor(rgb_image_raw, cv2.COLOR_BGR2RGB)
         #cv2.imwrite('/home/mauromartini/depth_images/rgb_image.png', rgb_image_raw)
@@ -111,14 +112,14 @@ class Pic4sr_ground():
 
     def show_image(self, image, text):
         colormap = np.asarray(image, dtype = np.uint8)
-        colormap = cv2.rotate(colormap, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        colormap = cv2.rotate(colormap, cv2.ROTATE_90_CLOCKWISE)
         cv2.namedWindow(text, cv2.WINDOW_NORMAL)
         cv2.imshow(text,colormap)
         cv2.waitKey(1)
 
     def show_image2(self, image, text):
         colormap = np.asarray(image, dtype = np.uint8)
-        colormap = cv2.rotate(colormap, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        colormap = cv2.rotate(colormap, cv2.ROTATE_90_CLOCKWISE)
         cv2.namedWindow(text, cv2.WINDOW_NORMAL)
         cv2.imshow(text,colormap)
         cv2.waitKey(1)
@@ -151,7 +152,7 @@ class Pic4sr_ground():
         if self.codec == 'H264':
             cap_receive = cv2.VideoCapture(
             ("udpsrc port=5000 "
-            "! queue leaky=2 " 
+            "! queue " 
             "! application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96 "
             "! rtph264depay "
             "! h264parse "
