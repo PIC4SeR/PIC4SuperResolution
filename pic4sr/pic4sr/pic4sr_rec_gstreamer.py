@@ -36,10 +36,11 @@ class Pic4sr_ground():
         dirname = os.path.dirname(__file__)
         self.model_path = os.path.join(dirname, 'models/srgan')
         self.sensor = 'bgr'
-        self.image_width = 120
-        self.image_height = 160
+        self.image_width = 60*8
+        self.image_height = 80*8
+        self.dist = 115
         self.codec='H264'
-        self.device = 'coral'
+        self.device = ''
 
         self.cutoff = 6.0
         self.show_img = True	
@@ -98,7 +99,7 @@ class Pic4sr_ground():
         #cv2.imwrite('/home/mauromartini/depth_images/rgb_image.png', rgb_image_raw)
 
         # compute SR inference
-        sr_rgb_image = self.test_inference_time(rgb_image_raw) # test inference time
+        #sr_rgb_image = self.test_inference_time(rgb_image_raw) # test inference time
         #sr_rgb_image = self.sr_model.predict(rgb_image_raw) # simple prediction
 
         # stream image
@@ -106,7 +107,7 @@ class Pic4sr_ground():
             # self.show_image(np.transpose(rgb_image_raw, (1,0,2)), 'Raw RGB Image')
             # self.show_image2(np.transpose(sr_rgb_image[0], (1,0,2)), 'SR RGB Image')
             self.show_image(rgb_image_raw, 'Raw RGB Image')
-            self.show_image2(sr_rgb_image[0], 'SR RGB Image')
+            #self.show_image2(sr_rgb_image[0], 'SR RGB Image')
         # print('image shape: ', img.shape)
         return img
 
@@ -137,14 +138,14 @@ class Pic4sr_ground():
         start = time.perf_counter()
         tdiff = start - self.prev
         self.latencies_rec.append(tdiff)
-        self.prev = start
-        print(f'Average Rec Speed: {1/np.mean(np.array(self.latencies_rec))} fps')        
-        if len(self.latencies_rec) > 200:
+        self.prev = start	
+        if len(self.latencies_rec) > 100:
             print(f'Average Rec Speed: {1/np.mean(np.array(self.latencies_rec))} fps')        
             print(f'Max Rec Latency: {max(self.latencies_rec)}')
+            np.save(os.path.expanduser(f'./pic4sr_test/lat/latencies_{self.codec}_{self.image_width}_{self.image_height}_{self.dist}.npy'), self.latencies_rec)
             plt.hist(np.array(self.latencies_rec))
-            plt.savefig(os.path.expanduser('~/pic4sr_test/img.png'))
-            plt.show()
+            plt.savefig(os.path.expanduser(f'./pic4sr_test/hist/hist_{self.codec}_{self.image_width}_{self.image_height}_{self.dist}.png'))
+            #plt.show()
             exit(0)
 
     def run(self,):
@@ -200,7 +201,7 @@ class Pic4sr_ground():
             
             ret,frame = cap_receive.read()  
             # self.show_image(frame, 'rec')
-            # self.rec_frequency()
+            self.rec_frequency()
 
 
             if ret:
