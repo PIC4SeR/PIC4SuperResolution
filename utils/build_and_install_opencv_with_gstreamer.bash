@@ -4,12 +4,14 @@ sudo apt update
 
 if [ -z "$(ls /usr/bin | grep cmake)" ]; then
   echo "Installing cmake"
-  sudo apt install cmake
+  sudo apt install cmake -y
 fi
+
+sudo apt install libgtk2.0-dev -y
 
 if [ ! -z "$(python2 -c "import numpy")" ]; then
   echo "Installing numpy"
-  sudo apt install python-numpy
+  sudo apt install python-numpy -y
 fi
 
 # INSTALL GStreamer
