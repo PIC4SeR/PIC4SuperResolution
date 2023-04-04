@@ -33,7 +33,7 @@ import math
 
 import cv2
 from cv_bridge import CvBridge
-from pic4sr.utils.model_class_CORAL import ModelCORAL
+#from pic4sr.utils.model_class_CORAL import ModelCORAL
 from pic4sr.utils.model_class_TFlite import ModelTFlite
 
 class Pic4sr_ground(Node):
@@ -45,9 +45,9 @@ class Pic4sr_ground(Node):
 		parameters=[
 			('model_path', 'models/srgan'),
 			('sensor', 'rgb'),
-			('image_width', 120),
-			('image_height', 160),
-			('device', 'coral')
+			('image_width', 80),
+			('image_height', 60),
+			('device', 'cpu')
 			])
 
 		dirname = os.path.dirname(__file__)
@@ -84,10 +84,10 @@ class Pic4sr_ground(Node):
 		** Instantiate SUPER RESOLUTION model
 		************************************************************"""
 		if self.device == 'coral':
-			self.model_path = self.model_path+'_converted_int8_edgetpu'+str(self.image_width)+str(self.image_height)+'.tflite'
-			self.sr_model = ModelCORAL(self.model_path)
+			self.model_path = self.model_path+'_edgetpu_'+str(self.image_width)+'_'+str(self.image_height)+'.tflite'
+			#self.sr_model = ModelCORAL(self.model_path)
 		elif self.device == 'cpu':
-			self.model_path = self.model_path+str(self.image_width)+str(self.image_height)+'.tflite'
+			self.model_path = self.model_path+'_cpu_'+str(self.image_width)+'_'+str(self.image_height)+'.tflite'
 			self.sr_model = ModelTFlite(self.model_path)
 		self.latencies = []	
  

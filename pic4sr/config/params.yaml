@@ -1,8 +1,8 @@
 pic4sr_params:
   ros__parameters:
-    model_path: '/home/mauromartini/SR_ws/src/PIC4SuperResolution/pic4sr/models/...'
+    model_path: '/root/ros2_ws/src/PIC4SuperResolution/pic4sr/pic4sr/models/...'
     sensor: 'rgb' # rgb or depth
-    image_width: 50
-    image_height: 50
+    image_width: 80
+    image_height: 60
     fps: 15
-    device: coral #coral or cpu
+    device: cpu #coral or cpu
