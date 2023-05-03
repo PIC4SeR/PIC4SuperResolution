@@ -6,8 +6,8 @@
 
 ---
 
-# Title
-PIC4SuperResolution
+# PIC4SuperResolution
+This is the second repository of the work "Generative Adversarial Super-Resolution at the Edge with Knowledge Distillation". The repo contains the ROS 2 package used to test the proposed Super-Resolution model at the edge in robotic applications.
 ## Description of the project
 The project aims at developing real-time image upscaling with Deep Learning at the edge to support visual remote control of UGVs and UAVs in exploration missions. The system allows to speed up and improve control on teleoperated robotic operation:
 1) Images captured by the robot on-board camera (Intel RealSense 435i) are transmitted with a minimal resolution at high frequnency. 
@@ -15,7 +15,7 @@ The project aims at developing real-time image upscaling with Deep Learning at t
 3) The operator can guide the robot with an optimized visual stream. 
 
 Two ROS nodes:
-  - pic4sr_realsense: run the camera acquisition and publishing process on the robot
+  - pic4sr_realsense or pic4sr_cam: run the realsense or webcam acquisition and publishing process on the robot
   - pic4sr_ground: receive the images and perform the upscaling with the SR model
 
 Config params:
@@ -31,9 +31,13 @@ Config params:
 - Install TensorFlow2 (2.6 or greater)
 - Install Coral EdgeTPU requirements from the website https://coral.ai/docs/accelerator/get-started/
 
-## User Guide
-...
+## References
+Angarano, S., Salvetti, F., Martini, M., & Chiaberge, M. (2022). Generative Adversarial Super-Resolution at the Edge with Knowledge Distillation. arXiv preprint arXiv:2209.03355.
 
-P.S. Compile requirements.txt file if needed
+	@article{angarano2022generative,
+	  title={Generative Adversarial Super-Resolution at the Edge with Knowledge Distillation},
+	  author={Angarano, Simone and Salvetti, Francesco and Martini, Mauro and Chiaberge, Marcello},
+	  journal={arXiv preprint arXiv:2209.03355},
+	  year={2022}
+	}
 
-More detailed information about markdown style for README.md file [HERE](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
